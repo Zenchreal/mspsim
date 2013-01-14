@@ -6,14 +6,14 @@ import se.sics.mspsim.util.Utils;
 public class DMA extends IOUnit {
 
     /* global DMA configuration */
-    public static final int DMACTL0 = 0x122;
-    public static final int DMACTL1 = 0x124;
+    public int DMACTL0 = 0x122;
+    public int DMACTL1 = 0x124;
 
     /* per channel configuration */
-    public static final int DMAxCTL = 0x1e0;
-    public static final int DMAxSA = 0x1e2;
-    public static final int DMAxDA = 0x1e4;
-    public static final int DMAxSZ = 0x1e6;
+    public int DMAxCTL = 0x1e0;
+    public int DMAxSA = 0x1e2;
+    public int DMAxDA = 0x1e4;
+    public int DMAxSZ = 0x1e6;
  
     /* DMA TSELx - from msp430x1xxx devices */
     /* new devices has more channels and more triggers */
@@ -216,19 +216,16 @@ public class DMA extends IOUnit {
 
     public void write(int address, int value, boolean word, long cycles) {
         if (DEBUG) log("DMA write to: " + Utils.hex(address, 4) + ": " + value);
-        switch (address) {
-        case DMACTL0:
+        if (address == DMACTL0) {
             /* DMA Control 0 */
             dmactl0 = value;
             channels[0].setTrigger(dmaTrigger[value & 0xf], dmaTriggerIndex[value & 0xf]);
             channels[1].setTrigger(dmaTrigger[(value >> 4) & 0xf], dmaTriggerIndex[(value >> 4) & 0xf]);
             channels[2].setTrigger(dmaTrigger[(value >> 8) & 0xf], dmaTriggerIndex[(value >> 8) & 0xf]);
-            break;
-        case DMACTL1:
+        } else if (address == DMACTL1) {
             /* DMA Control 1 */
             dmactl1 = value;
-            break;
-        default:
+        } else {
             /* must be word ??? */
             Channel c = channels[(address - DMAxCTL) / 8];
             c.write(address & 0x07, value);
@@ -236,14 +233,12 @@ public class DMA extends IOUnit {
     }
 
     public int read(int address, boolean word, long cycles) {
-        switch (address) {
-        case DMACTL0:
-            /* DMA Control 0 */
+        if (address == DMACTL0) {
             return dmactl0;
-        case DMACTL1:
+        } else if (address == DMACTL1) {
             /* DMA Control 1 */
             return dmactl1; 
-        default:
+        } else {
             /* must be word ??? */
             Channel c = channels[(address - DMAxCTL) / 8];
             return c.read(address & 7);
